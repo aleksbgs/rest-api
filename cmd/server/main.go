@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/aleksbgs/rest-api/internal/comment"
+	"github.com/aleksbgs/rest-api/internal/database"
 	transportHTTP "github.com/aleksbgs/rest-api/internal/transport/http"
 	"net/http"
 )
@@ -13,7 +15,16 @@ type App struct{}
 // Run- sets up application
 func (app *App) Run() error {
 	fmt.Println("Settings Up Our APP")
-	handler := transportHTTP.NewHandler()
+
+	var err error
+	db, err := database.NewDatabase()
+	if err != nil {
+		return err
+	}
+
+	commentService := comment.NewService(db)
+
+	handler := transportHTTP.NewHandler(commentService)
 	handler.SetupRoutes()
 
 	if err := http.ListenAndServe(":8080", handler.Router); err != nil {
